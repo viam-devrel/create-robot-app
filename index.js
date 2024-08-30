@@ -157,9 +157,9 @@ main().catch((error) => {
     fs.writeFileSync(path.join(projectPath, "index.html"), htmlContent);
 
     // Write a .env template with default environment variables
-    const envContent = `VITE_MACHINE_ADDRESS="yourMachineUri"
-VITE_API_KEY="yourApiKey" 
-VITE_API_KEY_ID="yourApiKeyId"`;
+    const envContent = `VITE_MACHINE_ADDRESS=yourMachineUri
+VITE_API_KEY=yourApiKey 
+VITE_API_KEY_ID=yourApiKeyId`;
 
     fs.writeFileSync(path.join(projectPath, ".env"), envContent);
 
