@@ -37,17 +37,19 @@ program
       version: "1.0.0",
       main: "main.ts",
       scripts: {
-        start:
-          "esbuild ./main.ts --bundle --outfile=static/main.js --servedir=static",
+        start: "vite",
+        build: "vite build",
+        preview: "vite preview",
         test: 'echo "Error: no test specified" && exit 1',
       },
       license: "ISC",
       devDependencies: {
         esbuild: "*",
+        typescript: "^5.5.4",
+        vite: "^5.4.2"
       },
       dependencies: {
-        "@viamrobotics/sdk": "*",
-        dotenv: "*",
+        "@viamrobotics/sdk": "*"
       },
     };
 
@@ -65,6 +67,10 @@ program
     const mainTsContent = `// This code must be run in a browser environment.
 
 import * as VIAM from "@viamrobotics/sdk";
+
+const MACHINE_ADDRESS = import.meta.env.MACHINE_ADDRESS;
+const API_KEY = import.meta.env.API_KEY;
+const API_KEY_ID = import.meta.env.API_KEY_ID;
 
 // This function moves a base component in a square.
 async function moveInSquare(client: VIAM.RobotClient) {
@@ -91,15 +97,15 @@ function button() {
 }
 
 const main = async () => {
-  const host = process.env.MACHINE_ADDRESS;
+  const host = MACHINE_ADDRESS;
 
   const machine = await VIAM.createRobotClient({
     host,
     credential: {
       type: "api-key",
-      payload: process.env.API_KEY,
+      payload: API_KEY,
     },
-    authEntity: process.env.API_KEY_ID,
+    authEntity: API_KEY_ID,
     signalingAddress: "https://app.viam.com:443",
   });
 
@@ -113,7 +119,8 @@ main().catch((error) => {
   console.error("encountered an error:", error);
 });`;
 
-    fs.writeFileSync(path.join(projectPath, "main.ts"), mainTsContent);
+    fs.mkdirSync(path.join(projectPath, "src"));
+    fs.writeFileSync(path.join(projectPath, "src", "main.ts"), mainTsContent);
 
     // Write an index.html file
     const htmlContent = `<!doctype html>
@@ -134,6 +141,62 @@ main().catch((error) => {
     fs.writeFileSync(
       path.join(projectPath, "static", "index.html"),
       htmlContent
+    );
+
+    // Write a vite.config.js file
+    const viteConfigContent = `import { defineConfig } from 'vite'
+
+export default defineConfig({
+  build: {
+    outDir: 'static',
+    rollupOptions: {
+      input: './src/main.ts', // Your entry file
+    }
+  },
+  publicDir: 'static',
+  preview: {
+    port: 8000, // Change to the desired port
+  },
+  server: {
+    open: true, // Open the browser on server start
+    port: 8000, // Change to the desired port
+    outDir: 'static',
+  }
+})`
+
+    fs.writeFileSync(
+      path.join(projectPath, "vite.config.js"),
+      viteConfigContent
+    );
+
+    // Write a tsconfig.json file
+    const tsconfigContent = `{
+    "compilerOptions": {
+      "target": "ES2020",
+      "useDefineForClassFields": true,
+      "module": "ESNext",
+      "lib": ["ES2020", "DOM", "DOM.Iterable"],
+      "skipLibCheck": true,
+  
+      /* Bundler mode */
+      "moduleResolution": "bundler",
+      "allowImportingTsExtensions": true,
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "noEmit": true,
+  
+      /* Linting */
+      "strict": true,
+      "noUnusedLocals": true,
+      "noUnusedParameters": true,
+      "noFallthroughCasesInSwitch": true
+    },
+    "include": ["src"]
+  }`
+
+    fs.writeFileSync(
+      path.join(projectPath, "tsconfig.json"),
+      tsconfigContent
     );
 
     // Write a .env template with default environment variables
