@@ -1,10 +1,11 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-import inquirer from "inquirer";
+// import inquirer from "inquirer";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
+import { exec } from "child_process/promises";
 
 const program = new Command();
 
@@ -16,7 +17,7 @@ program
 program
   .arguments("<projectName>")
   .description("Create a new robot project")
-  .action((projectName) => {
+  .action(async (projectName) => {
     console.log(chalk.green(`Creating project: ${projectName}`));
 
     // Create the directory
@@ -35,7 +36,6 @@ program
     const packageJsonContent = {
       name: projectName,
       version: "1.0.0",
-      main: "main.ts",
       scripts: {
         start: "vite",
         build: "vite build",
@@ -46,10 +46,10 @@ program
       devDependencies: {
         esbuild: "*",
         typescript: "^5.5.4",
-        vite: "^5.4.2"
+        vite: "^5.4.2",
       },
       dependencies: {
-        "@viamrobotics/sdk": "*"
+        "@viamrobotics/sdk": "*",
       },
     };
 
@@ -68,9 +68,9 @@ program
 
 import * as VIAM from "@viamrobotics/sdk";
 
-const MACHINE_ADDRESS = import.meta.env.MACHINE_ADDRESS;
-const API_KEY = import.meta.env.API_KEY;
-const API_KEY_ID = import.meta.env.API_KEY_ID;
+const MACHINE_ADDRESS = import.meta.env.VITE_MACHINE_ADDRESS;
+const API_KEY = import.meta.env.VITE_API_KEY;
+const API_KEY_ID = import.meta.env.VITE_API_KEY_ID;
 
 // This function moves a base component in a square.
 async function moveInSquare(client: VIAM.RobotClient) {
@@ -133,82 +133,28 @@ main().catch((error) => {
     <div id="main">
       <button id="main-button" disabled="true">Click me</button>
     </div>
-    <script type="module" src="main.js"></script>
+    <script type="module" src="src/main.ts"></script>
   </body>
 </html>`;
 
-    fs.mkdirSync(path.join(projectPath, "static"));
-    fs.writeFileSync(
-      path.join(projectPath, "static", "index.html"),
-      htmlContent
-    );
-
-    // Write a vite.config.js file
-    const viteConfigContent = `import { defineConfig } from 'vite'
-
-export default defineConfig({
-  build: {
-    outDir: 'static',
-    rollupOptions: {
-      input: './src/main.ts', // Your entry file
-    }
-  },
-  publicDir: 'static',
-  preview: {
-    port: 8000, // Change to the desired port
-  },
-  server: {
-    open: true, // Open the browser on server start
-    port: 8000, // Change to the desired port
-    outDir: 'static',
-  }
-})`
-
-    fs.writeFileSync(
-      path.join(projectPath, "vite.config.js"),
-      viteConfigContent
-    );
-
-    // Write a tsconfig.json file
-    const tsconfigContent = `{
-    "compilerOptions": {
-      "target": "ES2020",
-      "useDefineForClassFields": true,
-      "module": "ESNext",
-      "lib": ["ES2020", "DOM", "DOM.Iterable"],
-      "skipLibCheck": true,
-  
-      /* Bundler mode */
-      "moduleResolution": "bundler",
-      "allowImportingTsExtensions": true,
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "noEmit": true,
-  
-      /* Linting */
-      "strict": true,
-      "noUnusedLocals": true,
-      "noUnusedParameters": true,
-      "noFallthroughCasesInSwitch": true
-    },
-    "include": ["src"]
-  }`
-
-    fs.writeFileSync(
-      path.join(projectPath, "tsconfig.json"),
-      tsconfigContent
-    );
+    fs.writeFileSync(path.join(projectPath, "index.html"), htmlContent);
 
     // Write a .env template with default environment variables
-    const envContent = `MACHINE_ADDRESS="yourMachineUri"
-API_KEY="yourApiKey" 
-API_KEY_ID="yourApiKeyId"`;
+    const envContent = `VITE_MACHINE_ADDRESS="yourMachineUri"
+VITE_API_KEY="yourApiKey" 
+VITE_API_KEY_ID="yourApiKeyId"`;
 
-    fs.writeFileSync(path.join(projectPath, ".env.template"), envContent);
+    fs.writeFileSync(path.join(projectPath, ".env"), envContent);
+
+    await exec(`npm install`, { cwd: project });
 
     console.log(chalk.blue(`Project "${projectName}" setup complete!`));
     console.log(chalk.magenta(`  cd ${projectName}`));
-    console.log(chalk.magenta(`  npm install`));
+    console.log(
+      chalk.yellow(
+        `  # Update your .env file with your machine credentials from the CONNECT page of the VIAM app`
+      )
+    );
     console.log(chalk.magenta(`  npm start`));
   });
 
