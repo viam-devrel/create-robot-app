@@ -8,6 +8,7 @@
    $ cd my-viam-project
    ```
 1. Update the file `.env` with your own machine credentials from the **CONNECT** page of [the Viam app](https://app.viam.com/robots).
+   ![viam machine credentials](https://github.com/loopDelicious/create-robot-app/blob/main/viamMachineCredentials.png)
 1. Start the server. Your project should be running at `http://localhost:5173/`
    ```bash
    $ npm start
