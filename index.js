@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
-// import inquirer from "inquirer";
+import inquirer from "inquirer";
 import chalk from "chalk";
 import fs from "fs";
 import path from "path";
-import { exec } from "child_process/promises";
+import { exec } from "child_process";
+import { promisify } from "util";
+const execAsync = promisify(exec);
 
 const program = new Command();
 
@@ -15,9 +17,24 @@ program
 
 // Define the "create" command with a required argument for the project name
 program
-  .arguments("<projectName>")
+  // .arguments("<projectName>")
   .description("Create a new robot project")
-  .action(async (projectName) => {
+  .action(async () => {
+    // Prompt the user for the project name
+    const { projectName } = await inquirer.prompt([
+      {
+        type: "input",
+        name: "projectName",
+        message: "Enter the project name:",
+        validate: (input) => {
+          if (!input) {
+            return "Project name cannot be empty";
+          }
+          return true;
+        },
+        default: "my-viam-project",
+      },
+    ]);
     console.log(chalk.green(`Creating project: ${projectName}`));
 
     // Create the directory
@@ -146,16 +163,16 @@ VITE_API_KEY_ID="yourApiKeyId"`;
 
     fs.writeFileSync(path.join(projectPath, ".env"), envContent);
 
-    await exec(`npm install`, { cwd: project });
+    await execAsync(`npm install`, { cwd: projectName });
 
-    console.log(chalk.blue(`Project "${projectName}" setup complete!`));
-    console.log(chalk.magenta(`  cd ${projectName}`));
+    console.log(chalk.blue(`Project "${projectName}" setup complete!\n\n`));
+    console.log(chalk.cyan(`  cd ${projectName}\n`));
     console.log(
-      chalk.yellow(
-        `  # Update your .env file with your machine credentials from the CONNECT page of the VIAM app`
+      chalk.cyan(
+        `  # NOTE: Update your .env file with your machine credentials from the CONNECT page of the VIAM app 🤖\n`
       )
     );
-    console.log(chalk.magenta(`  npm start`));
+    console.log(chalk.cyan(`  npm start \n\n`));
   });
 
 // Parse the command-line arguments
