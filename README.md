@@ -19,3 +19,4 @@ Follow along with step-by-step instructions: [Drive a rover using TypeScript](ht
    ```bash
    $ npm start
    ```
+   ![TypeScript app to control rover](https://github.com/loopDelicious/create-robot-app/blob/main/clickMe.png)
