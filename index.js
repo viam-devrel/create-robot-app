@@ -148,7 +148,10 @@ main().catch((error) => {
   </head>
   <body>
     <div id="main">
-      <button id="main-button" disabled="true">Click me</button>
+      <h1>Drive a rover in a square</h1>
+      <p>We recommend you open the developer tools in your browser to see logs.</p>
+      <p>Also open a second window with the <a href="https://app.viam.com">Viam app</a> and navigate to your rover's <b>CONTROL</b> tab, which allows you to interact with your rover's resources. Click on one of the camera panels and toggle the camera stream on so you can observe the rover's movements.</p>
+      <button id="main-button" disabled="true">Click me to drive rover in square</button>
     </div>
     <script type="module" src="src/main.ts"></script>
   </body>
