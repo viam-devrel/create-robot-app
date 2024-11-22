@@ -118,11 +118,11 @@ const main = async () => {
 
   const machine = await VIAM.createRobotClient({
     host,
-    credential: {
+    credentials: {
       type: "api-key",
       payload: API_KEY,
+      authEntity: API_KEY_ID,
     },
-    authEntity: API_KEY_ID,
     signalingAddress: "https://app.viam.com:443",
   });
 
